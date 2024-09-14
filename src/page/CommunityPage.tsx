@@ -30,7 +30,7 @@ function PostingPage() {
     };
 
     try {
-        const response = await fetch(`https://imridd.eu.pythonanywhere.com/api/hive/communities?title=${community}`, {
+        const response = await fetch(`https://imridd.eu.pythonanywhere.com/api/steem/communities?title=${community}`, {
             method: 'GET',
             headers: headers,
         });
