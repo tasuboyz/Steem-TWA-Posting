@@ -2,7 +2,7 @@ import React from 'react';
 import './CommunityPage.css';
 import '../App.css'
 import { Telegram } from "@twa-dev/types";
-import { Box, List, ListItem, ListItemText, Container, TextField } from '@mui/material';
+import { Box, List, ListItem, ListItemText, TextField, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 const basePath = "/Steem-TWA-Posting";
@@ -21,9 +21,11 @@ interface Community {
 function PostingPage() {
   const [communityNames, setCommunityNames] = React.useState<Array<string>>([]);
   const [community, setCommunity] = React.useState<string>('');
+  const [loading, setLoading] = React.useState<boolean>(false);
   const navigate = useNavigate();
 
   const SearchCommunity = React.useCallback(async (): Promise<void> => {
+    setLoading(true);
     const headers = {
         "accept": "application/json",
         "Content-Type": "application/json"
@@ -43,6 +45,7 @@ function PostingPage() {
           return `${item.name},${item.title}`;
         });
         setCommunityNames(Communities);
+        setLoading(false);
     } catch (error) {
         window.Telegram.WebApp.showPopup({
             title: "Errore",
@@ -74,11 +77,11 @@ function PostingPage() {
 
   const handleCommunityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCommunity(event.target.value);
+    const filteredCommunities = communityNames.filter(name => 
+      name.toLowerCase().includes(event.target.value.toLowerCase())
+    );
+    setCommunityNames(filteredCommunities);
   };
-
-  // const handleCommunitySelect = (selectedName: string) => {
-  //   setCommunity(selectedName);
-  // };
 
   const handleCommunitySelect = (selectedName: string, selectedId: string) => {
     setCommunity(selectedName);
@@ -90,10 +93,9 @@ function PostingPage() {
 
   return (
     <div className="container-community">
-    <Container>
-      <Box className="container-community" sx={{ padding: 2 }}>
+      <div className="search-container">
         <TextField
-          id = 'community-input' 
+          id='community-input' 
           label="Search Community"
           value={community}
           onChange={handleCommunityChange}
@@ -101,23 +103,31 @@ function PostingPage() {
           variant="outlined"
           className="community-search"
         />
-        <Box id="list" sx={{ height: '400px', overflowY: 'scroll', marginTop: 2, width: '100%'}}>
-          <List>
-            <ListItem onClick={() => handleCommunitySelect("No community", "None")}>
-                <ListItemText primary="No community" />
-            </ListItem>
-            {communityNames.map((item, index) => {
-            const [id, name] = item.split(',');
+      </div>
+      <div className="list-container">
+        <List id="list">
+          <ListItem onClick={() => handleCommunitySelect("No community", "None")}>
+            <ListItemText primary="No community" />
+          </ListItem>
+          {communityNames.map((item, index) => {
+          const [id, name] = item.split(',');
+          if (communityNames.length === index + 1) {
             return (
               <ListItem key={index} onClick={() => handleCommunitySelect(name, id)}>
                 <ListItemText primary={name} />
               </ListItem>
-              );
-            })}
-          </List>
-        </Box>
-      </Box>
-    </Container>
+            );
+          } else {
+            return (
+              <ListItem key={index} onClick={() => handleCommunitySelect(name, id)}>
+                <ListItemText primary={name} />
+              </ListItem>
+            );
+          }
+        })}       
+        </List>
+        {loading && <Box display="flex" justifyContent="center" my={2}><CircularProgress /></Box>}
+      </div>
     </div>
   );
 }

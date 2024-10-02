@@ -33,8 +33,8 @@ function PostPage() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    const savedCommunityId = localStorage.getItem('hive_selectedCommunityId');
-    const savedCommunityName = localStorage.getItem('hive_selectedCommunityName');
+    const savedCommunityId = localStorage.getItem('steem_selectedCommunityId');
+    const savedCommunityName = localStorage.getItem('steem_selectedCommunityName');
     
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('username');
