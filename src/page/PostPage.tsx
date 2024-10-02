@@ -33,14 +33,33 @@ function PostPage() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    const savedCommunityId = localStorage.getItem('steem_selectedCommunityId');
-    const savedCommunityName = localStorage.getItem('steem_selectedCommunityName');
+    const savedCommunityId = localStorage.getItem('hive_selectedCommunityId');
+    const savedCommunityName = localStorage.getItem('hive_selectedCommunityName');
     
     const urlParams = new URLSearchParams(window.location.search);
     const username = urlParams.get('username');
     const wif = urlParams.get('wif');
-    setWif(wif)
-    setUsername(username)
+
+    if (username) {
+      sessionStorage.setItem('username', username);
+      setUsername(username);
+    }
+
+    if (wif) {
+      sessionStorage.setItem('wif', wif);
+      setWif(wif);
+    }
+
+    const savedUsername = sessionStorage.getItem('username');
+    const savedWif = sessionStorage.getItem('wif');
+
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
+
+    if (savedWif) {
+      setWif(savedWif);
+    }
 
     if (savedCommunityId) {
       setCommunityId(savedCommunityId);
