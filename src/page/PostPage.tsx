@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import './PostPage.css'
 import FileInput from '../components/FileInput';
 import { postAPI } from './api/postAPI';
+import ContextMenu from '../components/ContextMenu';
 
 const basePath = "/Steem-TWA-Posting";
 
@@ -30,6 +31,9 @@ function PostPage() {
   const [username, setUsername] = React.useState<string | null>(null);
   const [wif, setWif] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [contextMenuVisible, setContextMenuVisible] = React.useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = React.useState({ top: 0, left: 0 });
+  const [selectedText, setSelectedText] = React.useState<string | null>(null);
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -169,6 +173,57 @@ const handleSubmit = async (data: { image_url: string }) => {
   }
 };
 
+const handleMouseUp = (event: React.MouseEvent) => {
+  const selection = window.getSelection();
+  if (selection && selection.toString().length > 0) {
+      setSelectedText(selection.toString());
+      setContextMenuPosition({ top: event.clientY, left: event.clientX });
+      setContextMenuVisible(true);
+  } else {
+      setContextMenuVisible(false);
+  }
+};
+
+const handleSelectOption = (option: string) => {
+  if (selectedText) { // Controlla che selectedText non sia null
+    let formattedText;
+    switch (option) {
+      case "Bold":
+        formattedText = `**${selectedText}**`;
+        break;
+      case "Italic":
+        formattedText = `*${selectedText}*`;
+        break;
+      case "Underline":
+        formattedText = `<u>${selectedText}</u>`;
+        break;
+      case "Strikethrough":
+        formattedText = `~~${selectedText}~~`;
+        break;
+      case "Quote":
+        formattedText = `> ${selectedText}`;
+        break;
+      case "Script":
+        formattedText = `\`\`\`\n${selectedText}\n\`\`\``;
+        break;
+      case "Table":
+        formattedText = `|column1|column2|column3|\n|-|-|-|\n|${selectedText}|content2|content3|`;
+        break;
+      case "Spoiler":
+        formattedText = `>! [Hidden Spoiler Text] ${selectedText}\n> Optionally with more lines`;
+        break;
+      default:
+        console.log(`Selected option: ${option} for text: ${selectedText}`);
+        return;
+    }
+    setDescription(prevDescription => prevDescription.replace(selectedText, formattedText));
+  } else {
+    console.log("No text selected");
+  }
+  
+  setContextMenuVisible(false);
+};
+
   return (
     <>
       <div className="container">
@@ -193,17 +248,18 @@ const handleSubmit = async (data: { image_url: string }) => {
         className="input-description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        // onFocus={() => setShowFormatOptions(true)}
-        // onBlur={() => setShowFormatOptions(false)}
+        onMouseUp={handleMouseUp}
         maxLength={15000}
+        style={{ width: 'calc(100% - 20px)' }}
+        //style={{ width: '100%' }} // Assicura che l'input si allarghi al 100%
       />
-      {/* {showFormatOptions && (
-          <div className="format-options">
-            <button onClick={() => formatSelectedText('bold')}>Bold</button>
-            <button onClick={() => formatSelectedText('italic')}>Italic</button>
-            <button onClick={() => formatSelectedText('code')}>Code</button>
-          </div>
-      )} */}
+      {contextMenuVisible && (
+        <ContextMenu
+          options={['Bold', 'Italic', 'Underline', 'Quote', 'Script', 'Strikethrough' , 'Table', 'Spoiler' ,'Create link']}
+          onSelect={handleSelectOption}
+          position={contextMenuPosition}
+        />
+      )}
       {/* Casella di input per i tag */}
       <input
         type="text"
